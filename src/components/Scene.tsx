@@ -4,7 +4,13 @@ import { OrbitControls, TransformControls, Grid } from '@react-three/drei';
 import { useSceneStore } from '../store/sceneStore';
 
 const Scene: React.FC = () => {
-  const { objects, selectedObject, setSelectedObject, transformMode } = useSceneStore();
+  const { 
+    objects, 
+    selectedObject, 
+    setSelectedObject, 
+    toggleObjectSelection,
+    transformMode 
+  } = useSceneStore();
 
   return (
     <Canvas
@@ -29,7 +35,11 @@ const Scene: React.FC = () => {
             object={object}
             onClick={(e) => {
               e.stopPropagation();
-              setSelectedObject(object);
+              if (e.ctrlKey || e.metaKey) {
+                toggleObjectSelection(id);
+              } else {
+                setSelectedObject(object);
+              }
             }}
           />
         )
@@ -47,4 +57,4 @@ const Scene: React.FC = () => {
   );
 };
 
-export default Scene
+export default Scene;
