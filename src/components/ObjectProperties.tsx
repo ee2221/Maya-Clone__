@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSceneStore } from '../store/sceneStore';
 import { X } from 'lucide-react';
 import * as THREE from 'three';
 
 const ObjectProperties: React.FC = () => {
   const { selectedObject, updateObjectProperties, updateObjectColor, updateObjectOpacity } = useSceneStore();
+  const [localOpacity, setLocalOpacity] = useState(1);
 
   if (!selectedObject) return null;
 
@@ -32,7 +33,17 @@ const ObjectProperties: React.FC = () => {
 
   const material = getMaterial();
   const currentColor = material ? '#' + material.color.getHexString() : '#44aa88';
-  const currentOpacity = material ? material.opacity : 1;
+
+  useEffect(() => {
+    if (material) {
+      setLocalOpacity(material.opacity);
+    }
+  }, [selectedObject]);
+
+  const handleOpacityChange = (value: number) => {
+    setLocalOpacity(value);
+    updateObjectOpacity(value);
+  };
 
   return (
     <div className="absolute right-72 top-4 bg-white rounded-lg shadow-lg p-4 w-64">
@@ -130,12 +141,12 @@ const ObjectProperties: React.FC = () => {
                   min="0"
                   max="1"
                   step="0.01"
-                  value={currentOpacity}
-                  onChange={(e) => updateObjectOpacity(parseFloat(e.target.value))}
-                  className="flex-1"
+                  value={localOpacity}
+                  onChange={(e) => handleOpacityChange(parseFloat(e.target.value))}
+                  className="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
                 />
                 <span className="text-sm w-12 text-right">
-                  {Math.round(currentOpacity * 100)}%
+                  {Math.round(localOpacity * 100)}%
                 </span>
               </div>
             </div>
