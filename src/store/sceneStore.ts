@@ -17,6 +17,8 @@ interface SceneState {
   toggleVisibility: (id: string) => void;
   updateObjectName: (id: string, name: string) => void;
   updateObjectProperties: () => void;
+  updateObjectColor: (color: string) => void;
+  updateObjectOpacity: (opacity: number) => void;
 }
 
 export const useSceneStore = create<SceneState>((set) => ({
@@ -60,4 +62,23 @@ export const useSceneStore = create<SceneState>((set) => ({
       ),
     })),
   updateObjectProperties: () => set((state) => ({ ...state })),
+  updateObjectColor: (color) => 
+    set((state) => {
+      if (state.selectedObject instanceof THREE.Mesh) {
+        const material = state.selectedObject.material as THREE.MeshStandardMaterial;
+        material.color.setStyle(color);
+        material.needsUpdate = true;
+      }
+      return state;
+    }),
+  updateObjectOpacity: (opacity) =>
+    set((state) => {
+      if (state.selectedObject instanceof THREE.Mesh) {
+        const material = state.selectedObject.material as THREE.MeshStandardMaterial;
+        material.transparent = opacity < 1;
+        material.opacity = opacity;
+        material.needsUpdate = true;
+      }
+      return state;
+    }),
 }));
