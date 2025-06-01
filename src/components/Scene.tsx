@@ -7,6 +7,7 @@ const Scene: React.FC = () => {
   const { 
     objects, 
     selectedObject, 
+    selectedObjects,
     setSelectedObject, 
     toggleObjectSelection,
     transformMode 
@@ -16,6 +17,7 @@ const Scene: React.FC = () => {
     <Canvas
       camera={{ position: [5, 5, 5], fov: 75 }}
       className="w-full h-full bg-gray-900"
+      onClick={() => setSelectedObject(null)}
     >
       <ambientLight intensity={0.5} />
       <directionalLight position={[10, 10, 5]} intensity={1} />

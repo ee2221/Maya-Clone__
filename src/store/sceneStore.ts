@@ -70,6 +70,18 @@ export const useSceneStore = create<SceneState>((set) => ({
       } else {
         newSelection.add(id);
       }
+      
+      // If this is the only selected object, also set it as the selectedObject for transform controls
+      if (newSelection.size === 1) {
+        const selectedObj = state.objects.find(obj => obj.id === id);
+        if (selectedObj) {
+          return { 
+            selectedObjects: newSelection,
+            selectedObject: selectedObj.object
+          };
+        }
+      }
+      
       return { selectedObjects: newSelection };
     }),
     
@@ -133,9 +145,31 @@ export const useSceneStore = create<SceneState>((set) => ({
       const groupId = crypto.randomUUID();
       const selectedObjectsArray = Array.from(state.selectedObjects);
       
-      // Add objects to group
+      // Calculate the center position of all selected objects
+      const center = new THREE.Vector3();
+      let count = 0;
+      
+      selectedObjectsArray.forEach(id => {
+        const obj = state.objects.find(o => o.id === id);
+        if (obj) {
+          const worldPosition = new THREE.Vector3();
+          obj.object.getWorldPosition(worldPosition);
+          center.add(worldPosition);
+          count++;
+        }
+      });
+      
+      if (count > 0) {
+        center.divideScalar(count);
+        group.position.copy(center);
+      }
+      
+      // Add objects to group, adjusting their positions relative to the group's center
       const updatedObjects = state.objects.map(obj => {
         if (state.selectedObjects.has(obj.id)) {
+          const worldPosition = new THREE.Vector3();
+          obj.object.getWorldPosition(worldPosition);
+          obj.object.position.copy(worldPosition.sub(center));
           group.add(obj.object);
           return { ...obj, parentId: groupId };
         }
@@ -152,21 +186,34 @@ export const useSceneStore = create<SceneState>((set) => ({
 
       return {
         objects: updatedObjects,
-        selectedObjects: new Set(),
-        selectedObject: null
+        selectedObjects: new Set([groupId]),
+        selectedObject: group
       };
     }),
     
   ungroup: (groupId) =>
     set((state) => {
+      const groupObj = state.objects.find(obj => obj.id === groupId);
       const children = state.objects.filter(obj => obj.parentId === groupId);
+      
+      if (!groupObj) return state;
+      
+      // Get the group's world matrix
+      const worldMatrix = new THREE.Matrix4();
+      groupObj.object.updateWorldMatrix(true, false);
+      worldMatrix.copy(groupObj.object.matrixWorld);
+      
       const updatedObjects = state.objects
         .filter(obj => obj.id !== groupId) // Remove the group
-        .map(obj => obj.parentId === groupId ? { ...obj, parentId: undefined } : obj); // Unparent children
-
-      children.forEach(child => {
-        child.object.removeFromParent();
-      });
+        .map(obj => {
+          if (obj.parentId === groupId) {
+            // Apply the group's transformation to the child
+            obj.object.applyMatrix4(worldMatrix);
+            obj.object.removeFromParent();
+            return { ...obj, parentId: undefined };
+          }
+          return obj;
+        });
 
       return {
         objects: updatedObjects,
