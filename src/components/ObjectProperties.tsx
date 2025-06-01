@@ -7,6 +7,22 @@ const ObjectProperties: React.FC = () => {
   const { selectedObject, updateObjectProperties, updateObjectColor, updateObjectOpacity } = useSceneStore();
   const [localOpacity, setLocalOpacity] = useState(1);
 
+  const getMaterial = () => {
+    if (selectedObject instanceof THREE.Mesh) {
+      return selectedObject.material as THREE.MeshStandardMaterial;
+    }
+    return null;
+  };
+
+  const material = getMaterial();
+  const currentColor = material ? '#' + material.color.getHexString() : '#44aa88';
+
+  useEffect(() => {
+    if (material) {
+      setLocalOpacity(material.opacity);
+    }
+  }, [selectedObject, material]);
+
   if (!selectedObject) return null;
 
   const handlePositionChange = (axis: 'x' | 'y' | 'z', value: number) => {
@@ -23,22 +39,6 @@ const ObjectProperties: React.FC = () => {
     selectedObject.scale[axis] = value;
     updateObjectProperties();
   };
-
-  const getMaterial = () => {
-    if (selectedObject instanceof THREE.Mesh) {
-      return selectedObject.material as THREE.MeshStandardMaterial;
-    }
-    return null;
-  };
-
-  const material = getMaterial();
-  const currentColor = material ? '#' + material.color.getHexString() : '#44aa88';
-
-  useEffect(() => {
-    if (material) {
-      setLocalOpacity(material.opacity);
-    }
-  }, [selectedObject]);
 
   const handleOpacityChange = (value: number) => {
     setLocalOpacity(value);
