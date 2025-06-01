@@ -2,6 +2,7 @@ import React from 'react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, TransformControls, Grid } from '@react-three/drei';
 import { useSceneStore } from '../store/sceneStore';
+import { Object3D } from 'three';
 
 const Scene: React.FC = () => {
   const { objects, selectedObject, setSelectedObject, transformMode } = useSceneStore();
@@ -35,8 +36,9 @@ const Scene: React.FC = () => {
         )
       ))}
 
-      {selectedObject && (
+      {selectedObject && selectedObject instanceof Object3D && (
         <TransformControls
+          key={selectedObject.uuid}
           object={selectedObject}
           mode={transformMode}
         />
@@ -47,4 +49,4 @@ const Scene: React.FC = () => {
   );
 };
 
-export default Scene
+export default Scene;
