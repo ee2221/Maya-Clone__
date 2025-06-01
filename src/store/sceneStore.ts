@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import * as THREE from 'three';
-import { SubdivisionModifier } from 'three/examples/jsm/modifiers/SubdivisionModifier';
+import { SubdivisionModifier } from 'three/examples/jsm/modifiers/SubdivisionModifier.js';
 
 interface SceneState {
   objects: Array<{
