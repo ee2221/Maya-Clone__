@@ -1,5 +1,5 @@
 import React from 'react';
-import { Cuboid, Cherry, Cylinder, Cone, Pyramid, Move, RotateCw, Maximize, Sun, Edit3, Square, Box } from 'lucide-react';
+import { Cuboid, Cherry, Cylinder, Cone, Pyramid, Move, RotateCw, Maximize, Sun } from 'lucide-react';
 import { useSceneStore } from '../store/sceneStore';
 import * as THREE from 'three';
 
@@ -28,21 +28,6 @@ const Toolbar: React.FC = () => {
       icon: Maximize,
       mode: 'scale',
       title: 'Scale Tool',
-    },
-    {
-      icon: Edit3,
-      mode: 'vertex',
-      title: 'Vertex Tool',
-    },
-    {
-      icon: Square,
-      mode: 'edge',
-      title: 'Edge Tool',
-    },
-    {
-      icon: Box,
-      mode: 'face',
-      title: 'Face Tool',
     },
   ] as const;
 
@@ -109,4 +94,4 @@ const Toolbar: React.FC = () => {
   );
 }
 
-export default Toolbar
+export default Toolbar;

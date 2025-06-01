@@ -2,14 +2,9 @@ import React from 'react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, TransformControls, Grid } from '@react-three/drei';
 import { useSceneStore } from '../store/sceneStore';
-import { Object3D } from 'three';
 
 const Scene: React.FC = () => {
-  const { objects, selectedObjectId, setSelectedObject, transformMode } = useSceneStore();
-  const selectedObject = objects.find(obj => obj.id === selectedObjectId && obj.visible)?.object;
-  
-  // Only use the selected object for transform controls if it's a valid Object3D instance
-  const objectForTransformControls = selectedObject instanceof Object3D ? selectedObject : null;
+  const { objects, selectedObject, setSelectedObject, transformMode } = useSceneStore();
 
   return (
     <Canvas
@@ -34,16 +29,15 @@ const Scene: React.FC = () => {
             object={object}
             onClick={(e) => {
               e.stopPropagation();
-              setSelectedObject(id);
+              setSelectedObject(object);
             }}
           />
         )
       ))}
 
-      {objectForTransformControls && (
+      {selectedObject && (
         <TransformControls
-          key={selectedObjectId}
-          object={objectForTransformControls}
+          object={selectedObject}
           mode={transformMode}
         />
       )}
@@ -53,4 +47,4 @@ const Scene: React.FC = () => {
   );
 };
 
-export default Scene;
+export default Scene
