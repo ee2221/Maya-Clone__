@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import * as THREE from 'three';
+import { SubdivisionModifier } from 'three/examples/jsm/modifiers/SubdivisionModifier';
 
 interface SceneState {
   objects: Array<{
@@ -78,17 +79,33 @@ export const useSceneStore = create<SceneState>((set) => ({
   extrudeFaces: () => set((state) => {
     const selectedObject = state.objects.find(obj => obj.id === state.selectedObjectId)?.object;
     if (selectedObject && selectedObject instanceof THREE.Mesh) {
-      const geometry = selectedObject.geometry as THREE.BufferGeometry;
-      if (state.selectedFaces.length > 0) {
-        const positions = geometry.getAttribute('position');
-        const indices = geometry.getIndex();
+      const geometry = selectedObject.geometry.clone();
+      const positions = geometry.getAttribute('position');
+      const faces = state.selectedFaces;
+      
+      if (faces.length > 0) {
+        // Create new vertices for extrusion
+        const newPositions = new Float32Array([...positions.array]);
+        const verticesPerFace = 3;
         
-        // Extrude logic would go here
-        // This is a simplified version - would need proper geometry manipulation
+        faces.forEach(faceIndex => {
+          const baseIndex = faceIndex * verticesPerFace;
+          for (let i = 0; i < verticesPerFace; i++) {
+            const vIndex = baseIndex + i;
+            const x = positions.getX(vIndex);
+            const y = positions.getY(vIndex);
+            const z = positions.getZ(vIndex);
+            
+            // Extrude along face normal (simplified)
+            newPositions[vIndex * 3] = x * 1.2;
+            newPositions[vIndex * 3 + 1] = y * 1.2;
+            newPositions[vIndex * 3 + 2] = z * 1.2;
+          }
+        });
         
+        geometry.setAttribute('position', new THREE.Float32BufferAttribute(newPositions, 3));
         geometry.computeVertexNormals();
-        positions.needsUpdate = true;
-        if (indices) indices.needsUpdate = true;
+        selectedObject.geometry = geometry;
       }
     }
     return state;
@@ -96,10 +113,10 @@ export const useSceneStore = create<SceneState>((set) => ({
   subdivide: () => set((state) => {
     const selectedObject = state.objects.find(obj => obj.id === state.selectedObjectId)?.object;
     if (selectedObject && selectedObject instanceof THREE.Mesh) {
-      const geometry = selectedObject.geometry as THREE.BufferGeometry;
-      // Subdivision logic would go here
-      // This would create new vertices and faces for smoother geometry
-      geometry.computeVertexNormals();
+      const modifier = new SubdivisionModifier(1); // 1 subdivision level
+      const smoothGeometry = modifier.modify(selectedObject.geometry);
+      selectedObject.geometry = smoothGeometry;
+      selectedObject.geometry.computeVertexNormals();
     }
     return state;
   })
