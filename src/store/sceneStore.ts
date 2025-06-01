@@ -10,6 +10,7 @@ interface SceneState {
   }>;
   selectedObject: THREE.Object3D | null;
   transformMode: 'translate' | 'rotate' | 'scale';
+  gridUnit: 'cm' | 'inch';
   addObject: (object: THREE.Object3D, name: string) => void;
   removeObject: (id: string) => void;
   setSelectedObject: (object: THREE.Object3D | null) => void;
@@ -19,12 +20,14 @@ interface SceneState {
   updateObjectProperties: () => void;
   updateObjectColor: (color: string) => void;
   updateObjectOpacity: (opacity: number) => void;
+  setGridUnit: (unit: 'cm' | 'inch') => void;
 }
 
 export const useSceneStore = create<SceneState>((set) => ({
   objects: [],
   selectedObject: null,
   transformMode: 'translate',
+  gridUnit: 'cm',
   addObject: (object, name) =>
     set((state) => ({
       objects: [...state.objects, { id: crypto.randomUUID(), object, name, visible: true }],
@@ -81,4 +84,5 @@ export const useSceneStore = create<SceneState>((set) => ({
       }
       return state;
     }),
+  setGridUnit: (unit) => set({ gridUnit: unit }),
 }));
