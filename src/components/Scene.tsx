@@ -39,6 +39,7 @@ const Scene: React.FC = () => {
 
       {selectedObject && selectedObject instanceof Object3D && (
         <TransformControls
+          key={selectedObjectId}
           object={selectedObject}
           mode={transformMode}
         />
