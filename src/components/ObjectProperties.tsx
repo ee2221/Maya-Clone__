@@ -4,7 +4,8 @@ import { X, Maximize2, Layers } from 'lucide-react';
 
 const ObjectProperties: React.FC = () => {
   const { 
-    selectedObject, 
+    objects,
+    selectedObjectId, 
     updateObjectProperties, 
     transformMode,
     selectedVertices,
@@ -13,6 +14,8 @@ const ObjectProperties: React.FC = () => {
     extrudeFaces,
     subdivide
   } = useSceneStore();
+
+  const selectedObject = objects.find(obj => obj.id === selectedObjectId && obj.visible)?.object;
 
   if (!selectedObject) return null;
 

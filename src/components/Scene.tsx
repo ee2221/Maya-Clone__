@@ -5,7 +5,8 @@ import { useSceneStore } from '../store/sceneStore';
 import { Object3D } from 'three';
 
 const Scene: React.FC = () => {
-  const { objects, selectedObject, setSelectedObject, transformMode } = useSceneStore();
+  const { objects, selectedObjectId, setSelectedObject, transformMode } = useSceneStore();
+  const selectedObject = objects.find(obj => obj.id === selectedObjectId && obj.visible)?.object;
 
   return (
     <Canvas
@@ -30,7 +31,7 @@ const Scene: React.FC = () => {
             object={object}
             onClick={(e) => {
               e.stopPropagation();
-              setSelectedObject(object);
+              setSelectedObject(id);
             }}
           />
         )
@@ -38,7 +39,6 @@ const Scene: React.FC = () => {
 
       {selectedObject && selectedObject instanceof Object3D && (
         <TransformControls
-          key={selectedObject.uuid}
           object={selectedObject}
           mode={transformMode}
         />

@@ -8,14 +8,14 @@ interface SceneState {
     name: string;
     visible: boolean;
   }>;
-  selectedObject: THREE.Object3D | null;
+  selectedObjectId: string | null;
   selectedVertices: number[];
   selectedEdges: number[];
   selectedFaces: number[];
   transformMode: 'translate' | 'rotate' | 'scale' | 'vertex' | 'edge' | 'face';
   addObject: (object: THREE.Object3D, name: string) => void;
   removeObject: (id: string) => void;
-  setSelectedObject: (object: THREE.Object3D | null) => void;
+  setSelectedObject: (id: string | null) => void;
   setTransformMode: (mode: 'translate' | 'rotate' | 'scale' | 'vertex' | 'edge' | 'face') => void;
   toggleVisibility: (id: string) => void;
   updateObjectName: (id: string, name: string) => void;
@@ -29,7 +29,7 @@ interface SceneState {
 
 export const useSceneStore = create<SceneState>((set) => ({
   objects: [],
-  selectedObject: null,
+  selectedObjectId: null,
   selectedVertices: [],
   selectedEdges: [],
   selectedFaces: [],
@@ -41,12 +41,10 @@ export const useSceneStore = create<SceneState>((set) => ({
   removeObject: (id) =>
     set((state) => ({
       objects: state.objects.filter((obj) => obj.id !== id),
-      selectedObject: state.objects.find((obj) => obj.id === id)?.object === state.selectedObject
-        ? null
-        : state.selectedObject,
+      selectedObjectId: state.selectedObjectId === id ? null : state.selectedObjectId,
     })),
-  setSelectedObject: (object) => set({ 
-    selectedObject: object,
+  setSelectedObject: (id) => set({ 
+    selectedObjectId: id,
     selectedVertices: [],
     selectedEdges: [],
     selectedFaces: []
@@ -60,13 +58,11 @@ export const useSceneStore = create<SceneState>((set) => ({
       
       const toggledObject = updatedObjects.find((obj) => obj.id === id);
       
-      const newSelectedObject = (toggledObject && !toggledObject.visible && toggledObject.object === state.selectedObject)
-        ? null
-        : state.selectedObject;
-
       return {
         objects: updatedObjects,
-        selectedObject: newSelectedObject,
+        selectedObjectId: (toggledObject && !toggledObject.visible && id === state.selectedObjectId)
+          ? null
+          : state.selectedObjectId,
       };
     }),
   updateObjectName: (id, name) =>
@@ -80,10 +76,10 @@ export const useSceneStore = create<SceneState>((set) => ({
   setSelectedEdges: (indices) => set({ selectedEdges: indices }),
   setSelectedFaces: (indices) => set({ selectedFaces: indices }),
   extrudeFaces: () => set((state) => {
-    if (state.selectedObject && state.selectedObject instanceof THREE.Mesh) {
-      const geometry = state.selectedObject.geometry as THREE.BufferGeometry;
+    const selectedObject = state.objects.find(obj => obj.id === state.selectedObjectId)?.object;
+    if (selectedObject && selectedObject instanceof THREE.Mesh) {
+      const geometry = selectedObject.geometry as THREE.BufferGeometry;
       if (state.selectedFaces.length > 0) {
-        // Create new vertices for selected faces
         const positions = geometry.getAttribute('position');
         const indices = geometry.getIndex();
         
@@ -98,8 +94,9 @@ export const useSceneStore = create<SceneState>((set) => ({
     return state;
   }),
   subdivide: () => set((state) => {
-    if (state.selectedObject && state.selectedObject instanceof THREE.Mesh) {
-      const geometry = state.selectedObject.geometry as THREE.BufferGeometry;
+    const selectedObject = state.objects.find(obj => obj.id === state.selectedObjectId)?.object;
+    if (selectedObject && selectedObject instanceof THREE.Mesh) {
+      const geometry = selectedObject.geometry as THREE.BufferGeometry;
       // Subdivision logic would go here
       // This would create new vertices and faces for smoother geometry
       geometry.computeVertexNormals();
