@@ -7,6 +7,9 @@ import { Object3D } from 'three';
 const Scene: React.FC = () => {
   const { objects, selectedObjectId, setSelectedObject, transformMode } = useSceneStore();
   const selectedObject = objects.find(obj => obj.id === selectedObjectId && obj.visible)?.object;
+  
+  // Only use the selected object for transform controls if it's a valid Object3D instance
+  const objectForTransformControls = selectedObject instanceof Object3D ? selectedObject : null;
 
   return (
     <Canvas
@@ -37,10 +40,10 @@ const Scene: React.FC = () => {
         )
       ))}
 
-      {selectedObject && selectedObject instanceof Object3D && (
+      {objectForTransformControls && (
         <TransformControls
           key={selectedObjectId}
-          object={selectedObject}
+          object={objectForTransformControls}
           mode={transformMode}
         />
       )}
